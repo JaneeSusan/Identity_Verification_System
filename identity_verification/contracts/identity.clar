@@ -53,3 +53,10 @@
     (ok true)
   )
 )
+;; Check if an identity is active
+(define-read-only (is-identity-active (owner principal))
+  (match (map-get? identities owner)
+    identity (ok (get active identity))
+    (err ERR_NOT_FOUND)
+  )
+)

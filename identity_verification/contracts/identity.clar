@@ -1,30 +1,26 @@
+;; identity-registry.clar
+;; Handles identity registration and management
 
-;; identity-traits.clar
-;; Define interfaces for the identity system
+(impl-trait .identity-traits.identity-registry-trait)
 
-(define-trait identity-registry-trait
-  (
-    (register-identity (principal (buff 256)) (response bool uint))
-    (update-identity (principal (buff 256)) (response bool uint))
-    (get-identity-data (principal) (response (buff 256) uint))
-    (deactivate-identity (principal) (response bool uint))
-    (is-identity-active (principal) (response bool uint))
+;; Data storage
+
+;; Map of user principal to identity data
+(define-map identities principal { data: (buff 256), active: bool })
+
+;; Error codes
+(define-constant ERR_NOT_FOUND u404)
+(define-constant ERR_UNAUTHORIZED u401)
+(define-constant ERR_ALREADY_EXISTS u409)
+
+;; Functions
+
+;; Register a new identity with the system
+(define-public (register-identity (data (buff 256)))
+  (let ((caller tx-sender))
+    (asserts! (not (is-some (map-get? identities caller))) (err ERR_ALREADY_EXISTS))
+    
+    (map-set identities caller { data: data, active: true })
+    (ok true)
   )
 )
-
-(define-trait credential-issuer-trait
-  (
-    (issue-credential (principal (string-ascii 64) (buff 1024)) (response uint uint))
-    (revoke-credential (uint) (response bool uint))
-    (is-credential-valid (uint) (response bool uint))
-    (get-credential-data (uint) (response {owner: principal, type: (string-ascii 64), data: (buff 1024), issuer: principal, valid: bool} uint))
-  )
-)
-
-(define-trait credential-verifier-trait
-  (
-    (verify-credential (uint) (response bool uint))
-    (verify-credential-by-type (principal (string-ascii 64)) (response (optional uint) uint))
-  )
-)
-

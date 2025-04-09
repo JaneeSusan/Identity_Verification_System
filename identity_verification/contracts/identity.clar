@@ -24,3 +24,21 @@
     (ok true)
   )
 )
+
+;; Update an existing identity's data
+(define-public (update-identity (data (buff 256)))
+  (let ((caller tx-sender))
+    (asserts! (is-some (map-get? identities caller)) (err ERR_NOT_FOUND))
+    
+    (map-set identities caller (merge (unwrap-panic (map-get? identities caller)) { data: data }))
+    (ok true)
+  )
+)
+
+;; Get identity data for a principal
+(define-read-only (get-identity-data (owner principal))
+  (match (map-get? identities owner)
+    identity (ok (get data identity))
+    (err ERR_NOT_FOUND)
+  )
+)

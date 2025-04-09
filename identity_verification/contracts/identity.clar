@@ -42,3 +42,14 @@
     (err ERR_NOT_FOUND)
   )
 )
+
+;; Deactivate an identity
+(define-public (deactivate-identity (owner principal))
+  (begin
+    (asserts! (is-eq tx-sender owner) (err ERR_UNAUTHORIZED))
+    (asserts! (is-some (map-get? identities owner)) (err ERR_NOT_FOUND))
+    
+    (map-set identities owner (merge (unwrap-panic (map-get? identities owner)) { active: false }))
+    (ok true)
+  )
+)
